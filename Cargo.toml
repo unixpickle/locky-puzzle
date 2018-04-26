@@ -1,0 +1,8 @@
+[package]
+name = "locky-puzzle"
+version = "0.1.0"
+authors = ["Alex Nichol <unixpickle@gmail.com>"]
+
+[lib]
+name = "locky_puzzle"
+path = "src/mod.rs"
