@@ -19,7 +19,7 @@ pub struct State(pub [Sticker; 48]);
 
 impl State {
     /// Create a solved state.
-    pub fn new() -> State {
+    pub fn solved() -> State {
         use Color::*;
         use Direction::*;
 
@@ -30,7 +30,7 @@ impl State {
 
         let mut stickers = [Sticker{color: U, direction: Neutral}; 48];
 
-        let face_infos = colors.into_iter().zip(&directions).zip(&arrow_idxs).enumerate();
+        let face_infos = colors.iter().zip(&directions).zip(&arrow_idxs).enumerate();
         for (face_idx, ((color, direction), indices)) in face_infos {
             for sub_idx in 0..8 {
                 stickers[face_idx * 8 + sub_idx] = Sticker{
@@ -76,7 +76,31 @@ impl State {
     }
 }
 
-// TODO: implement Debug and PartialEq for State.
+impl Default for State {
+    /// Create the solved state.
+    fn default() -> State {
+        State::solved()
+    }
+}
+
+impl PartialEq for State {
+    fn eq(&self, other: &State) -> bool {
+        // TODO: why do we need iter() on other.0 here?
+        let iter = self.0.iter().zip(other.0.iter());
+        for (s1, s2) in iter {
+            if s1 != s2 {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn ne(&self, other: &State) -> bool {
+        !(self == other)
+    }
+}
+
+// TODO: implement Debug for State.
 
 /// A sticker on the puzzle.
 #[derive(Clone, Copy, Debug, PartialEq)]
