@@ -23,21 +23,21 @@ pub struct State(pub [Sticker; 48]);
 impl State {
     /// Create a solved state.
     pub fn solved() -> State {
-        use Color::*;
+        use Face::*;
         use Direction::*;
 
         // Puzzle hyper-parameters.
-        let colors = [U, D, F, B, R, L];
+        let faces = [U, D, F, B, R, L];
         let directions = [Counter, Clockwise, Clockwise, Counter, Clockwise, Counter];
         let arrow_idxs = [[1, 6], [1, 6], [3, 4], [3, 4], [1, 6], [1, 6]];
 
-        let mut stickers = [Sticker{color: U, direction: Neutral}; 48];
+        let mut stickers = [Sticker::default(); 48];
 
-        let face_infos = colors.iter().zip(&directions).zip(&arrow_idxs).enumerate();
-        for (face_idx, ((color, direction), indices)) in face_infos {
+        let face_infos = faces.iter().zip(&directions).zip(&arrow_idxs).enumerate();
+        for (face_idx, ((face, direction), indices)) in face_infos {
             for sub_idx in 0..8 {
                 stickers[face_idx * 8 + sub_idx] = Sticker{
-                    color: *color,
+                    face: *face,
                     direction: if sub_idx == indices[0] || sub_idx == indices[1] {
                         *direction
                     } else {
@@ -51,8 +51,8 @@ impl State {
     }
 
     /// Get the 8 stickers for a given face.
-    pub fn face_stickers(&self, face: Color) -> &[Sticker] {
-        use Color::*;
+    pub fn face(&self, face: Face) -> &[Sticker] {
+        use Face::*;
         match face {
             U => &self.0[0..8],
             D => &self.0[8..16],
@@ -63,10 +63,23 @@ impl State {
         }
     }
 
+    /// Get the 8 stickers for a given face.
+    pub fn face_mut(&mut self, face: Face) -> &mut [Sticker] {
+        use Face::*;
+        match face {
+            U => &mut self.0[0..8],
+            D => &mut self.0[8..16],
+            F => &mut self.0[16..24],
+            B => &mut self.0[24..32],
+            R => &mut self.0[32..40],
+            L => &mut self.0[40..48]
+        }
+    }
+
     /// Check if a face is locked (i.e. cannot be turned).
-    pub fn locked(&self, face: Color) -> bool {
+    pub fn locked(&self, face: Face) -> bool {
         let mut direction = Direction::Neutral;
-        for sticker in self.face_stickers(face) {
+        for sticker in self.face(face) {
             if direction == Direction::Neutral {
                 direction = sticker.direction;
             } else if sticker.direction != Direction::Neutral {
@@ -104,18 +117,18 @@ impl PartialEq for State {
 
 impl Display for State {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        use Color::*;
+        use Face::*;
         use Direction::*;
         write!(f, "[")?;
         for (i, color) in [U, D, F, B, R, L].iter().enumerate() {
             if i != 0 {
                 write!(f, ", ")?;
             }
-            for (j, sticker) in self.face_stickers(*color).iter().enumerate() {
+            for (j, sticker) in self.face(*color).iter().enumerate() {
                 if j > 0 {
                     write!(f, " ")?;
                 }
-                write!(f, "{}{}", sticker.color, match sticker.direction {
+                write!(f, "{}{}", sticker.face, match sticker.direction {
                     Clockwise => "c",
                     Counter => "c'",
                     Neutral => ""
@@ -131,8 +144,14 @@ impl Display for State {
 /// A sticker on the puzzle.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sticker {
-    pub color: Color,
+    pub face: Face,
     pub direction: Direction
+}
+
+impl Default for Sticker {
+    fn default() -> Sticker {
+        Sticker{face: Face::U, direction: Direction::Neutral}
+    }
 }
 
 /// A restriction on the direction a sticker can be turned.
@@ -155,7 +174,7 @@ pub enum Direction {
 ///
 /// This color scheme is based on a physical version of the puzzle.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Color {
+pub enum Face {
     U,
     D,
     F,
@@ -164,9 +183,9 @@ pub enum Color {
     L
 }
 
-impl Display for Color {
+impl Display for Face {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        use Color::*;
+        use Face::*;
         write!(f, "{}", match self {
             &U => "U",
             &D => "D",
