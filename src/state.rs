@@ -1,5 +1,8 @@
 //! Definition of the puzzle state.
 
+use std::fmt;
+use std::fmt::{Display, Formatter};
+
 /// The sticker configuration of a puzzle.
 ///
 /// The array consists of 8 stickers per face, with the faces appearing in the
@@ -100,6 +103,30 @@ impl PartialEq for State {
     }
 }
 
+impl Display for State {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        use Color::*;
+        use Direction::*;
+        write!(f, "[")?;
+        for (i, color) in [U, D, F, B, R, L].iter().enumerate() {
+            if i != 0 {
+                write!(f, ", ")?;
+            }
+            for (j, sticker) in self.face_stickers(*color).iter().enumerate() {
+                if j > 0 {
+                    write!(f, " ")?;
+                }
+                write!(f, "{}{}", sticker.color, match sticker.direction {
+                    Clockwise => "c",
+                    Counter => "c'",
+                    Neutral => ""
+                })?;
+            }
+        }
+        write!(f, "]")
+    }
+}
+
 // TODO: implement Debug for State.
 
 /// A sticker on the puzzle.
@@ -136,4 +163,32 @@ pub enum Color {
     B,
     R,
     L
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        use Color::*;
+        write!(f, "{}", match self {
+            &U => "U",
+            &D => "D",
+            &F => "F",
+            &B => "B",
+            &R => "R",
+            &L => "L"
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test the Display output for a solved puzzle.
+    #[test]
+    fn solved_display() {
+        let actual = format!("{}", State::default());
+        let expected = "[U Uc' U U U U Uc' U, D Dc D D D D Dc D, F F F Fc Fc F F F, ".to_owned() +
+            "B B B Bc' Bc' B B B, R Rc R R R R Rc R, L Lc' L L L L Lc' L]";
+        assert_eq!(actual, expected);
+    }
 }
