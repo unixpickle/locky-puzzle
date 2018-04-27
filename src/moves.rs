@@ -7,14 +7,12 @@ pub struct Move {
 }
 
 impl Move {
-    /// Apply the move to a state and get the resulting state.
+    /// Apply the move to a state.
     ///
     /// Does not check if the move is valid, i.e. if the face is locked.
-    pub fn apply(&self, state: &State) -> State {
-        let mut result = state.clone();
-        self.turns.apply_face(result.face_mut(self.face));
-        self.turns.apply_ring(&mut result, self.face);
-        result
+    pub fn apply(&self, state: &mut State) {
+        self.turns.apply_face(state.face_mut(self.face));
+        self.turns.apply_ring(state, self.face);
     }
 }
 
