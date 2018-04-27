@@ -88,7 +88,6 @@ impl Default for State {
 
 impl PartialEq for State {
     fn eq(&self, other: &State) -> bool {
-        // TODO: why do we need iter() on other.0 here?
         let iter = self.0.iter().zip(other.0.iter());
         for (s1, s2) in iter {
             if s1 != s2 {
