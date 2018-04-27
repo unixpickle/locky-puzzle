@@ -78,7 +78,7 @@ impl Turns {
     }
 }
 
-/// Get the 9 stickers that are adjacent to a face.
+/// Get the stickers that are adjacent to a face.
 ///
 /// The stickers are grouped by 3's from the same adjacent face.
 /// The indices go in clockwise order from the top left back to
