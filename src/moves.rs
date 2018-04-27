@@ -106,6 +106,7 @@ fn face_ring(face: Face) -> [[usize; 3]; 4] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use state::Direction;
 
     use Face::*;
     use Turns::*;
@@ -227,18 +228,36 @@ mod tests {
             D, U, D, D, F, F, L, B
         ];
         test_scramble(&moves, &stickers);
-        // TODO: check orientations.
+        let counter_indices = [8 * 5 + 1, 8 + 4, 8 * 3 + 4, 8 * 2 + 1, 1, 8 + 3];
+        let clockwise_indices = [8 + 1, 8 + 6, 8 * 2 + 4, 8 * 3 + 3, 8 * 5 + 4, 8 * 4 + 1];
+        let state = state_from_moves(&moves);
+        for index in &counter_indices {
+            assert_eq!(state.0[*index].direction, Direction::Counter);
+        }
+        for index in &clockwise_indices {
+            assert_eq!(state.0[*index].direction, Direction::Clockwise);
+        }
+        for (i, sticker) in state.0.iter().enumerate() {
+            if !counter_indices.contains(&i) && !clockwise_indices.contains(&i) {
+                assert_eq!(sticker.direction, Direction::Neutral);
+            }
+        }
     }
 
     /// Test that the moves give rise to the stickers.
     fn test_scramble(moves: &[Move], stickers: &[Face]) {
-        let mut state = State::default();
-        for m in moves {
-            m.apply(&mut state);
-        }
+        let state = state_from_moves(moves);
         for (i, (actual, expected)) in state.0.iter().zip(stickers).enumerate() {
             assert!(&actual.face == expected, "bad sticker at {} (expected {}, got {})",
                 i, expected, actual.face);
         }
+    }
+
+    fn state_from_moves(moves: &[Move]) -> State {
+        let mut state = State::default();
+        for m in moves {
+            m.apply(&mut state);
+        }
+        state
     }
 }
