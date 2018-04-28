@@ -18,6 +18,9 @@ impl<'a> ThreadScope<'a> {
             replace(&mut f_once, None).unwrap()()
         };
 
+        // We have to use trait objects in order to change the lifetime.
+        // Otherwise, we'd need to create a type that is like F except with a
+        // 'static lifetime, which I think is impossible.
         let boxed = Box::new(caller);
         let static_boxed = unsafe {
             transmute::<Box<FnMut() + Send + 'a>, _>(boxed)
