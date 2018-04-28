@@ -1,9 +1,10 @@
 //! Abstractions for search heuristics.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
-use super::state::State;
+use super::moves::Move;
 use super::proj::Proj;
+use super::state::State;
 
 /// A lower-bound on the number of moves to achieve a certain goal.
 pub trait Heuristic {
@@ -27,6 +28,39 @@ impl<T: Heuristic> Heuristic for MaxHeuristic<T> {
 pub struct ProjHeuristic<T: Proj> {
     pub table: HashMap<T, u8>,
     pub default: u8
+}
+
+impl<T: Proj> ProjHeuristic<T> {
+    /// Uses a simple search algorithm to build a heuristic table.
+    pub fn generate(depth: u8) -> Self {
+        let mut table = HashMap::new();
+        let mut states = VecDeque::new();
+        states.push_back(State::default());
+        table.insert(Proj::project(&State::default()), 0);
+        let moves = Move::all();
+        for i in 0..depth {
+            let pop_size = states.len();
+            if pop_size == 0 {
+                break;
+            }
+            for _ in 0..pop_size {
+                let state = states.pop_front().unwrap();
+                for m in &moves {
+                    let mut new_state = state.clone();
+                    m.apply(&mut new_state);
+                    let proj = Proj::project(&new_state);
+                    if !table.contains_key(&proj) {
+                        table.insert(proj, i + 1);
+                        states.push_back(new_state);
+                    }
+                }
+            }
+        }
+        ProjHeuristic{
+            table: table,
+            default: depth + 1
+        }
+    }
 }
 
 impl<T: Proj> Heuristic for ProjHeuristic<T> {

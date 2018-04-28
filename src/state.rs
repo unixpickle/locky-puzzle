@@ -2,6 +2,7 @@
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 
 /// The sticker configuration of a puzzle.
 ///
@@ -92,6 +93,14 @@ impl State {
     }
 }
 
+impl Hash for State {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for sticker in self.0.iter() {
+            sticker.hash(state);
+        }
+    }
+}
+
 impl Default for State {
     /// Create the solved state.
     fn default() -> State {
@@ -113,6 +122,9 @@ impl PartialEq for State {
     fn ne(&self, other: &State) -> bool {
         !(self == other)
     }
+}
+
+impl Eq for State {
 }
 
 impl Display for State {
