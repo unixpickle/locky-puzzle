@@ -8,8 +8,14 @@ use super::proj::Proj;
 use super::state::State;
 
 /// A lower-bound on the number of moves to achieve a certain goal.
-pub trait Heuristic {
+pub trait Heuristic: Send + Sync {
     fn lower_bound(&self, s: &State) -> u8;
+}
+
+impl Heuristic for Box<Heuristic> {
+    fn lower_bound(&self, s: &State) -> u8 {
+        self.as_ref().lower_bound(s)
+    }
 }
 
 /// A heuristic that takes a max over other heuristics.

@@ -10,7 +10,7 @@ use super::state::{Direction, Face, State};
 /// * The same state always has the same projection.
 /// * If you know a projection, you can apply moves and get a new projection.
 /// * A projection must know which faces are locked.
-pub trait Proj: Clone + Eq + Hash {
+pub trait Proj: Clone + Eq + Hash + Send + Sync {
     /// Project the state onto the subspace.
     fn project(s: &State) -> Self;
 }
