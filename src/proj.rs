@@ -32,7 +32,7 @@ impl Proj for LockProj {
                 s.0[face_idx * 8usize + 1].direction,
                 s.0[face_idx * 8usize + 3].direction,
                 s.0[face_idx * 8usize + 4].direction,
-                s.0[face_idx * 8usize + 6].direction,
+                s.0[face_idx * 8usize + 6].direction
             );
         }
         res
@@ -51,21 +51,25 @@ impl Hash for LockProj {
 #[derive(Clone, Eq, PartialEq)]
 pub struct CornerProj {
     lock: LockProj,
-    corners: [Face; 16]
+    packed_corners: [u8; 8]
 }
 
 impl Proj for CornerProj {
     fn project(s: &State) -> Self {
-        use Face::*;
-        let mut corners = [U; 16];
+        let mut corners = [0; 8];
         for face_idx in 0..4 {
-            for (i, sticker_idx) in [0, 2, 5, 7].iter().enumerate() {
-                corners[face_idx * 4 + i] = s.0[face_idx * 8 + sticker_idx].face;
-            }
+            corners[face_idx * 2] = face_pair_to_u8(
+                s.0[face_idx * 8 + 0].face,
+                s.0[face_idx * 8 + 2].face
+            );
+            corners[face_idx * 2 + 1] = face_pair_to_u8(
+                s.0[face_idx * 8 + 5].face,
+                s.0[face_idx * 8 + 7].face
+            );
         }
         CornerProj{
             lock: Proj::project(s),
-            corners: corners
+            packed_corners: corners
         }
     }
 }
@@ -73,16 +77,7 @@ impl Proj for CornerProj {
 impl Hash for CornerProj {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.lock.hash(state);
-        state.write(&[
-            face_pair_to_u8(self.corners[0], self.corners[1]),
-            face_pair_to_u8(self.corners[2], self.corners[3]),
-            face_pair_to_u8(self.corners[4], self.corners[5]),
-            face_pair_to_u8(self.corners[6], self.corners[7]),
-            face_pair_to_u8(self.corners[8], self.corners[9]),
-            face_pair_to_u8(self.corners[10], self.corners[11]),
-            face_pair_to_u8(self.corners[12], self.corners[13]),
-            face_pair_to_u8(self.corners[14], self.corners[15])
-        ]);
+        state.write(&self.packed_corners);
     }
 }
 
