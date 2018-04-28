@@ -83,7 +83,7 @@ impl<T: Proj> ProjHeuristic<T> {
 
 impl<T: Proj> Heuristic for ProjHeuristic<T> {
     fn lower_bound(&self, s: &State) -> u8 {
-        *self.table.get(&Proj::project(s)).unwrap_or(&0)
+        *self.table.get(&Proj::project(s)).unwrap_or(&self.default)
     }
 }
 
