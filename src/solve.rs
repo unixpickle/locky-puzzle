@@ -29,6 +29,9 @@ pub fn solve<H: Heuristic>(
 
     let mut threads = Vec::new();
     for (gen, m) in MoveGen::new() {
+        if state.is_locked(m.face) {
+            continue;
+        }
         let local_send = send.clone();
         threads.push(ThreadScope::spawn(move || {
             let mut local_state = state.clone();
