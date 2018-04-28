@@ -6,3 +6,7 @@ authors = ["Alex Nichol <unixpickle@gmail.com>"]
 [lib]
 name = "locky_puzzle"
 path = "src/mod.rs"
+
+[[bin]]
+name = "bench-heuristic"
+path = "src/bench/bench_heuristic.rs"
