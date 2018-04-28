@@ -1,6 +1,6 @@
 //! Projections onto subspaces of the puzzle state.
 
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 
 use super::state::{Face, State};
 
@@ -19,7 +19,7 @@ pub trait Proj: Clone + Eq + Hash {
 ///
 /// This is the least amount of information a Proj could possibly contain,
 /// since any less information could not determine if a move was locked.
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct LockProj {
     pub clockwise: [u8; 6],
     pub counter: [u8; 6]
@@ -48,10 +48,19 @@ impl Proj for LockProj {
     }
 }
 
+impl Hash for LockProj {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write(&[self.clockwise[0], self.clockwise[1], self.clockwise[2],
+                      self.clockwise[3], self.clockwise[4], self.clockwise[5],
+                      self.counter[0], self.counter[1], self.counter[2],
+                      self.counter[3], self.counter[4], self.counter[5]]);
+    }
+}
+
 /// A projection of a state onto the corners.
 ///
 /// Corners are encoded by storing two of their three stickers.
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct CornerProj {
     pub lock: LockProj,
     pub corners: [Face; 16]
@@ -70,5 +79,37 @@ impl Proj for CornerProj {
             lock: Proj::project(s),
             corners: corners
         }
+    }
+}
+
+impl Hash for CornerProj {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.lock.hash(state);
+        state.write(&[
+            face_pair_to_u8(self.corners[0], self.corners[1]),
+            face_pair_to_u8(self.corners[2], self.corners[3]),
+            face_pair_to_u8(self.corners[4], self.corners[5]),
+            face_pair_to_u8(self.corners[6], self.corners[7]),
+            face_pair_to_u8(self.corners[8], self.corners[9]),
+            face_pair_to_u8(self.corners[10], self.corners[11]),
+            face_pair_to_u8(self.corners[12], self.corners[13]),
+            face_pair_to_u8(self.corners[14], self.corners[15])
+        ]);
+    }
+}
+
+fn face_pair_to_u8(f1: Face, f2: Face) -> u8 {
+    face_to_u8(f1) | (face_to_u8(f2) << 4)
+}
+
+fn face_to_u8(face: Face) -> u8 {
+    use Face::*;
+    match face {
+        U => 0,
+        D => 1,
+        F => 2,
+        B => 3,
+        R => 4,
+        L => 5
     }
 }
