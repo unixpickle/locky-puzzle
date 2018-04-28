@@ -16,7 +16,7 @@ pub struct HeuristicArgs {
 
 /// Parse the command-line arguments.
 pub fn parse_args() -> Result<Args, String> {
-    let matches = App::new("myodine-client")
+    let matches = App::new("locky-solve")
         .arg(Arg::with_name("corner-depth")
             .long("corner-depth")
             .value_name("NUM")
