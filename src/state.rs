@@ -51,6 +51,18 @@ impl State {
         State(stickers)
     }
 
+    pub fn is_solved(&self) -> bool {
+        use Face::*;
+        for face in &[U, D, F, B, R, L] {
+            for sticker in self.face(*face) {
+                if &sticker.face != face {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
     /// Get the 8 stickers for a given face.
     pub fn face(&self, face: Face) -> &[Sticker] {
         use Face::*;
