@@ -16,11 +16,15 @@ use super::thread::ThreadScope;
 /// This may find sub-optimal solutions if the given depth is too large.
 /// Thus, it is recommended that callers iteratively try deeper and deeper
 /// searches until a solution is found.
-pub fn solve<H: Heuristic + Sync>(
+pub fn solve<H: Heuristic>(
     state: &State,
     heuristic: &H,
     depth: u8
 ) -> Option<Algo> {
+    if depth == 0 {
+        return solve_serial(state, heuristic, depth);
+    }
+
     let (send, recv) = channel();
 
     let mut threads = Vec::new();
@@ -97,6 +101,13 @@ mod tests {
     use super::*;
     use heuristic::NopHeuristic;
     use moves::Algo;
+
+    /// Test solving zero-move scrambles.
+    #[test]
+    fn zero_move_scramble() {
+        let actual = solve(&State::default(), &NopHeuristic(), 0).unwrap();
+        assert_eq!(actual, Algo(Vec::new()));
+    }
 
     /// Test solving a one-move scramble.
     #[test]
