@@ -2,7 +2,7 @@
 
 use std::hash::{Hash, Hasher};
 
-use super::state::{Face, State};
+use super::state::{Direction, Face, State};
 
 /// A projection of a state onto a subspace of all possible states.
 ///
@@ -21,30 +21,17 @@ pub trait Proj: Clone + Eq + Hash {
 /// since any less information could not determine if a move was locked.
 #[derive(Clone, Eq, PartialEq)]
 pub struct LockProj {
-    pub clockwise: [u8; 6],
-    pub counter: [u8; 6]
+    pub directions: [Direction; 24]
 }
 
 impl Proj for LockProj {
     fn project(s: &State) -> Self {
-        use super::state::Direction::*;
-        let mut res = LockProj{clockwise: [0; 6], counter: [0; 6]};
-        let mut clock_idx = 0;
-        let mut counter_idx = 0;
-        for face_idx in &[0, 1, 2, 3, 4, 5] {
-            for sticker_idx in &[1, 3, 4, 6] {
-                let idx = (face_idx * 8 + sticker_idx) as usize;
-                match s.0[idx].direction {
-                    Clockwise => {
-                        res.clockwise[clock_idx] = idx as u8;
-                        clock_idx += 1;
-                    },
-                    Counter => {
-                        res.counter[counter_idx] = idx as u8;
-                        counter_idx += 1;
-                    },
-                    Neutral => ()
-                }
+        use Direction::*;
+        let mut res = LockProj{directions: [Neutral; 24]};
+        for face_idx in 0..6 {
+            for (i, sticker_idx) in [1, 3, 4, 6].iter().enumerate() {
+                let dir = s.0[face_idx * 8usize + sticker_idx].direction;
+                res.directions[face_idx * 4 + i] = dir;
             }
         }
         res
@@ -53,10 +40,20 @@ impl Proj for LockProj {
 
 impl Hash for LockProj {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write(&[self.clockwise[0], self.clockwise[1], self.clockwise[2],
-                      self.clockwise[3], self.clockwise[4], self.clockwise[5],
-                      self.counter[0], self.counter[1], self.counter[2],
-                      self.counter[3], self.counter[4], self.counter[5]]);
+        state.write(&[
+            dir_quad_to_u8(self.directions[0], self.directions[1], self.directions[2],
+                self.directions[3]),
+            dir_quad_to_u8(self.directions[4], self.directions[5], self.directions[6],
+                self.directions[7]),
+            dir_quad_to_u8(self.directions[8], self.directions[9], self.directions[10],
+                self.directions[11]),
+            dir_quad_to_u8(self.directions[12], self.directions[13], self.directions[14],
+                self.directions[15]),
+            dir_quad_to_u8(self.directions[16], self.directions[17], self.directions[18],
+                self.directions[19]),
+            dir_quad_to_u8(self.directions[20], self.directions[21], self.directions[22],
+                self.directions[23])
+        ]);
     }
 }
 
@@ -114,5 +111,18 @@ fn face_to_u8(face: Face) -> u8 {
         B => 3,
         R => 4,
         L => 5
+    }
+}
+
+fn dir_quad_to_u8(d1: Direction, d2: Direction, d3: Direction, d4: Direction) -> u8 {
+    dir_to_u8(d1) | (dir_to_u8(d2) << 2) | (dir_to_u8(d3) << 4) | (dir_to_u8(d4) << 6)
+}
+
+fn dir_to_u8(dir: Direction) -> u8 {
+    use Direction::*;
+    match dir {
+        Clockwise => 0,
+        Counter => 1,
+        Neutral => 2
     }
 }
