@@ -2,6 +2,27 @@
 
 use super::state::{Face, State, Sticker};
 
+pub const ALL_MOVES: [Move; 18] = [
+    Move{face: Face::U, turns: Turns::Clockwise},
+    Move{face: Face::U, turns: Turns::Double},
+    Move{face: Face::U, turns: Turns::Counter},
+    Move{face: Face::D, turns: Turns::Clockwise},
+    Move{face: Face::D, turns: Turns::Double},
+    Move{face: Face::D, turns: Turns::Counter},
+    Move{face: Face::F, turns: Turns::Clockwise},
+    Move{face: Face::F, turns: Turns::Double},
+    Move{face: Face::F, turns: Turns::Counter},
+    Move{face: Face::B, turns: Turns::Clockwise},
+    Move{face: Face::B, turns: Turns::Double},
+    Move{face: Face::B, turns: Turns::Counter},
+    Move{face: Face::R, turns: Turns::Clockwise},
+    Move{face: Face::R, turns: Turns::Double},
+    Move{face: Face::R, turns: Turns::Counter},
+    Move{face: Face::L, turns: Turns::Clockwise},
+    Move{face: Face::L, turns: Turns::Double},
+    Move{face: Face::L, turns: Turns::Counter}
+];
+
 /// A description of a single move on the cube, in the face-turn metric.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Move {
@@ -10,18 +31,6 @@ pub struct Move {
 }
 
 impl Move {
-    pub fn all() -> [Move; 18] {
-        use Face::*;
-        use Turns::*;
-        let mut res = [Move{face: U, turns: Clockwise}; 18];
-        for (i, face) in [U, D, F, B, R, L].iter().enumerate() {
-            for (j, turns) in [Clockwise, Double, Counter].iter().enumerate() {
-                res[i * 3 + j] = Move{face: *face, turns: *turns};
-            }
-        }
-        res
-    }
-
     /// Apply the move to a state.
     ///
     /// Does not check if the move is valid, i.e. if the face is locked.

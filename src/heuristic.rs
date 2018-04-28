@@ -3,7 +3,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::collections::hash_map::Entry;
 
-use super::moves::Move;
+use super::move_gen::MoveGen;
 use super::proj::Proj;
 use super::state::State;
 
@@ -36,17 +36,16 @@ impl<T: Proj> ProjHeuristic<T> {
     pub fn generate(depth: u8) -> Self {
         let mut table = HashMap::new();
         let mut states = VecDeque::new();
-        states.push_back(State::default());
+        states.push_back((MoveGen::new(), State::default()));
         table.insert(Proj::project(&State::default()), 0);
-        let moves = Move::all();
         for i in 0..depth {
             let pop_size = states.len();
             if pop_size == 0 {
                 break;
             }
             for _ in 0..pop_size {
-                let state = states.pop_front().unwrap();
-                for m in &moves {
+                let (moves, state) = states.pop_front().unwrap();
+                for (new_moves, m) in moves {
                     if state.is_locked(m.face) {
                         continue;
                     }
@@ -55,7 +54,7 @@ impl<T: Proj> ProjHeuristic<T> {
                     let proj = Proj::project(&new_state);
                     if let Entry::Vacant(v) = table.entry(proj) {
                         v.insert(i + 1);
-                        states.push_back(new_state);
+                        states.push_back((new_moves.clone(), new_state));
                     }
                 }
             }
@@ -85,5 +84,8 @@ mod tests {
 
         let heuristic_2: ProjHeuristic<CornerProj> = ProjHeuristic::generate(2);
         assert_eq!(heuristic_2.table.len(), 190);
+
+        let heuristic_5: ProjHeuristic<CornerProj> = ProjHeuristic::generate(5);
+        assert_eq!(heuristic_5.table.len(), 77362);
     }
 }
