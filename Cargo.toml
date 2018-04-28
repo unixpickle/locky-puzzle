@@ -17,7 +17,7 @@ path = "src/bench/bench_solve.rs"
 
 [[bin]]
 name = "locky-solve"
-path = "src/locky_solve/main.rs"
+path = "src/tools/solve/main.rs"
 
 [dependencies]
 clap = "2.31"
