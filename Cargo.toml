@@ -14,3 +14,10 @@ path = "src/bench/bench_heuristic.rs"
 [[bin]]
 name = "bench-solve"
 path = "src/bench/bench_solve.rs"
+
+[[bin]]
+name = "locky-solve"
+path = "src/locky_solve/main.rs"
+
+[dependencies]
+clap = "2.31"
