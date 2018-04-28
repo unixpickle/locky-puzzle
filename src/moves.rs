@@ -1,3 +1,5 @@
+//! Moves that can be applied to states.
+
 use super::state::{Face, State, Sticker};
 
 /// A description of a single move on the cube, in the face-turn metric.
@@ -40,22 +42,11 @@ pub enum Turns {
 impl Turns {
     /// Apply the turn to the stickers of a face.
     fn apply_face(&self, stickers: &mut [Sticker]) {
-        // TODO: optimize so that double/counter are not slower.
-        for _ in 0..self.move_count() {
-            // Corner permutation.
-            let c0 = stickers[0];
-            stickers[0] = stickers[5];
-            stickers[5] = stickers[7];
-            stickers[7] = stickers[2];
-            stickers[2] = c0;
+        // Corner permutation.
+        self.permute_indirect(stickers, &[0, 2, 7, 5]);
 
-            // Edge permutation.
-            let e0 = stickers[1];
-            stickers[1] = stickers[3];
-            stickers[3] = stickers[6];
-            stickers[6] = stickers[4];
-            stickers[4] = e0;
-        }
+        // Edge permutation.
+        self.permute_indirect(stickers, &[1, 4, 6, 3]);
     }
 
     /// Apply the turn to the ring around a face.
@@ -67,14 +58,7 @@ impl Turns {
                 cur_stickers[i][j] = state.0[indices[i][j]];
             }
         }
-        // TODO: optimize so that double/counter are not slower.
-        for _ in 0..self.move_count() {
-            let first = cur_stickers[0];
-            cur_stickers[0] = cur_stickers[3];
-            cur_stickers[3] = cur_stickers[2];
-            cur_stickers[2] = cur_stickers[1];
-            cur_stickers[1] = first;
-        }
+        self.permute(&mut cur_stickers);
         for i in 0..4 {
             for j in 0..3 {
                 state.0[indices[i][j]] = cur_stickers[i][j]
@@ -82,12 +66,45 @@ impl Turns {
         }
     }
 
-    fn move_count(&self) -> i32 {
+    /// Permute the list of items, assuming they are listed clockwise.
+    fn permute<T>(&self, list: &mut [T]) {
         use Turns::*;
         match self {
-            &Clockwise => 1,
-            &Double => 2,
-            &Counter => 3
+            &Clockwise => {
+                list.swap(0, 3);
+                list.swap(1, 3);
+                list.swap(2, 3);
+            },
+            &Double => {
+                list.swap(0, 2);
+                list.swap(1, 3);
+            },
+            &Counter => {
+                list.swap(0, 3);
+                list.swap(0, 2);
+                list.swap(0, 1);
+            }
+        }
+    }
+
+    // Like permute(), but uses indices into a larger list.
+    fn permute_indirect<T>(&self, list: &mut [T], indices: &[usize]) {
+        use Turns::*;
+        match self {
+            &Clockwise => {
+                list.swap(indices[0], indices[3]);
+                list.swap(indices[1], indices[3]);
+                list.swap(indices[2], indices[3]);
+            },
+            &Double => {
+                list.swap(indices[0], indices[2]);
+                list.swap(indices[1], indices[3]);
+            },
+            &Counter => {
+                list.swap(indices[0], indices[3]);
+                list.swap(indices[0], indices[2]);
+                list.swap(indices[0], indices[1]);
+            }
         }
     }
 }
