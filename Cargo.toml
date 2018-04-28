@@ -10,3 +10,7 @@ path = "src/mod.rs"
 [[bin]]
 name = "bench-heuristic"
 path = "src/bench/bench_heuristic.rs"
+
+[[bin]]
+name = "bench-solve"
+path = "src/bench/bench_solve.rs"

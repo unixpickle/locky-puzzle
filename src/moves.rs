@@ -72,10 +72,18 @@ impl FromStr for Move {
 pub struct Algo(pub Vec<Move>);
 
 impl Algo {
+    /// Apply the moves to a state.
     pub fn apply(&self, s: &mut State) {
         for m in &self.0 {
             m.apply(s);
         }
+    }
+
+    /// Apply the moves to the solved state and get the result.
+    pub fn state(&self) -> State {
+        let mut res = State::default();
+        self.apply(&mut res);
+        res
     }
 }
 

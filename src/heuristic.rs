@@ -25,6 +25,15 @@ impl<T: Heuristic> Heuristic for MaxHeuristic<T> {
     }
 }
 
+/// A heuristic that always returns 0.
+pub struct NopHeuristic();
+
+impl Heuristic for NopHeuristic {
+    fn lower_bound(&self, _: &State) -> u8 {
+        0
+    }
+}
+
 /// A heuristic that uses a lookup table of projections.
 pub struct ProjHeuristic<T: Proj> {
     pub table: HashMap<T, u8>,

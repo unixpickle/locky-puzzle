@@ -1,33 +1,26 @@
 //! Solving the puzzle.
 
+use std::mem::drop;
 use std::sync::mpsc::channel;
 
 use super::heuristic::Heuristic;
 use super::move_gen::MoveGen;
-use super::moves::Move;
+use super::moves::{Algo, Move};
 use super::state::State;
 use super::thread::ThreadScope;
 
 /// Find a solution of the given depth.
 ///
+/// Uses multiple threads for the search.
+///
 /// This may find sub-optimal solutions if the given depth is too large.
 /// Thus, it is recommended that callers iteratively try deeper and deeper
 /// searches until a solution is found.
-pub fn solve<H: Heuristic + Send + Sync + 'static>(
+pub fn solve<H: Heuristic + Sync>(
     state: &State,
     heuristic: &H,
-    depth: u8,
-    use_threads: bool
-) -> Option<Vec<Move>> {
-    if !use_threads {
-        let mut solution = Vec::new();
-        if solve_search(state, heuristic, depth, &mut solution, MoveGen::new()) {
-            return Some(solution)
-        } else {
-            return None;
-        }
-    }
-
+    depth: u8
+) -> Option<Algo> {
     let (send, recv) = channel();
 
     let mut threads = Vec::new();
@@ -43,13 +36,33 @@ pub fn solve<H: Heuristic + Send + Sync + 'static>(
         }));
     }
 
+    drop(send);
+
     let mut best_solution: Option<Vec<Move>> = None;
     for solution in recv {
         if best_solution.is_none() || solution.len() < best_solution.as_ref().unwrap().len() {
             best_solution = Some(solution);
         }
     }
-    best_solution
+    best_solution.map(Algo)
+}
+
+/// Find a solution of the given depth.
+///
+/// Uses a single thread.
+///
+/// See solve() for details.
+pub fn solve_serial<H: Heuristic>(
+    state: &State,
+    heuristic: &H,
+    depth: u8
+) -> Option<Algo> {
+    let mut solution = Vec::new();
+    if solve_search(state, heuristic, depth, &mut solution, MoveGen::new()) {
+        Some(Algo(solution))
+    } else {
+        None
+    }
 }
 
 fn solve_search<H: Heuristic>(
@@ -61,10 +74,13 @@ fn solve_search<H: Heuristic>(
 ) -> bool {
     if state.is_solved() {
         return true;
-    } else if depth == 0 {
+    } else if depth == 0 || depth < heuristic.lower_bound(state) {
         return false;
     }
     for (new_gen, m) in gen {
+        if state.is_locked(m.face) {
+            continue;
+        }
         let mut new_state = state.clone();
         m.apply(&mut new_state);
         history.push(m);
@@ -74,4 +90,35 @@ fn solve_search<H: Heuristic>(
         history.pop();
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use heuristic::NopHeuristic;
+    use moves::Algo;
+
+    /// Test solving a one-move scramble.
+    #[test]
+    fn one_move_scramble() {
+        let algo: Algo = "L'".parse().unwrap();
+        let actual = solve(&algo.state(), &NopHeuristic(), 1).unwrap();
+        assert_eq!(actual, "L".parse().unwrap());
+    }
+
+    /// Test the case when the depth isn't high enough.
+    #[test]
+    fn not_enough_depth() {
+        let algo: Algo = "B D2 B' U2 L2".parse().unwrap();
+        let actual = solve(&algo.state(), &NopHeuristic(), 4);
+        assert!(actual.is_none());
+    }
+
+    /// Test solving a five-move scramble.
+    #[test]
+    fn five_move_scramble() {
+        let algo: Algo = "B D2 B' U2 L2".parse().unwrap();
+        let actual = solve(&algo.state(), &NopHeuristic(), 5).unwrap();
+        assert_eq!(actual, "L2 U2 B D2 B'".parse().unwrap());
+    }
 }
