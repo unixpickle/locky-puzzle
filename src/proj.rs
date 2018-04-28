@@ -31,17 +31,20 @@ impl Proj for LockProj {
         let mut res = LockProj{clockwise: [0; 6], counter: [0; 6]};
         let mut clock_idx = 0;
         let mut counter_idx = 0;
-        for (i, sticker) in s.0.iter().enumerate() {
-            match sticker.direction {
-                Clockwise => {
-                    res.clockwise[clock_idx] = i as u8;
-                    clock_idx += 1;
-                },
-                Counter => {
-                    res.counter[counter_idx] = i as u8;
-                    counter_idx += 1;
-                },
-                Neutral => ()
+        for face_idx in &[0, 1, 2, 3, 4, 5] {
+            for sticker_idx in &[1, 3, 4, 6] {
+                let idx = (face_idx * 8 + sticker_idx) as usize;
+                match s.0[idx].direction {
+                    Clockwise => {
+                        res.clockwise[clock_idx] = idx as u8;
+                        clock_idx += 1;
+                    },
+                    Counter => {
+                        res.counter[counter_idx] = idx as u8;
+                        counter_idx += 1;
+                    },
+                    Neutral => ()
+                }
             }
         }
         res
