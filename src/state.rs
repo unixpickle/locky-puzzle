@@ -142,7 +142,7 @@ impl Display for State {
 // TODO: implement Debug for State.
 
 /// A sticker on the puzzle.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Sticker {
     pub face: Face,
     pub direction: Direction
@@ -155,7 +155,7 @@ impl Default for Sticker {
 }
 
 /// A restriction on the direction a sticker can be turned.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Direction {
     Clockwise,
     Counter,
@@ -173,7 +173,7 @@ pub enum Direction {
 /// * `L` - white
 ///
 /// This color scheme is based on a physical version of the puzzle.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Face {
     U,
     D,
