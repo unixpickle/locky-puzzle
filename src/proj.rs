@@ -21,7 +21,7 @@ pub trait Proj: Clone + Eq + Hash {
 /// since any less information could not determine if a move was locked.
 #[derive(Clone, Eq, PartialEq)]
 pub struct LockProj {
-    pub directions: [Direction; 24]
+    directions: [Direction; 24]
 }
 
 impl Proj for LockProj {
@@ -62,8 +62,8 @@ impl Hash for LockProj {
 /// Corners are encoded by storing two of their three stickers.
 #[derive(Clone, Eq, PartialEq)]
 pub struct CornerProj {
-    pub lock: LockProj,
-    pub corners: [Face; 16]
+    lock: LockProj,
+    corners: [Face; 16]
 }
 
 impl Proj for CornerProj {
