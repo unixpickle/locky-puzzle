@@ -1,6 +1,7 @@
 //! Abstractions for search heuristics.
 
 use std::collections::{HashMap, VecDeque};
+use std::collections::hash_map::Entry;
 
 use super::moves::Move;
 use super::proj::Proj;
@@ -52,8 +53,8 @@ impl<T: Proj> ProjHeuristic<T> {
                     let mut new_state = state.clone();
                     m.apply(&mut new_state);
                     let proj = Proj::project(&new_state);
-                    if !table.contains_key(&proj) {
-                        table.insert(proj, i + 1);
+                    if let Entry::Vacant(v) = table.entry(proj) {
+                        v.insert(i + 1);
                         states.push_back(new_state);
                     }
                 }
