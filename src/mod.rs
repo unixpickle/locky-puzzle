@@ -11,7 +11,7 @@ mod thread;
 
 pub use heuristic::{Heuristic, MaxHeuristic, ProjHeuristic};
 pub use move_gen::{MoveGen};
-pub use moves::{ALL_MOVES, Move, Turns};
+pub use moves::{ALL_MOVES, Algo, Move, ParseMoveError, Turns};
 pub use proj::{CornerProj, Proj, LockProj};
 pub use solve::solve;
 pub use state::{Face, Direction, State};

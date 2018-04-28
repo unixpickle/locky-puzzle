@@ -1,5 +1,10 @@
 //! Moves that can be applied to states.
 
+use std::error::Error;
+use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+
 use super::state::{Face, State, Sticker};
 
 pub const ALL_MOVES: [Move; 18] = [
@@ -37,6 +42,97 @@ impl Move {
     pub fn apply(&self, state: &mut State) {
         self.turns.apply_face(state.face_mut(self.face));
         self.turns.apply_ring(state, self.face);
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        use Turns::*;
+        self.face.fmt(f)?;
+        write!(f, "{}", match self.turns {
+            Clockwise => "",
+            Double => "2",
+            Counter => "'"
+        })
+    }
+}
+
+impl FromStr for Move {
+    type Err = ParseMoveError;
+
+    fn from_str(s: &str) -> Result<Move, ParseMoveError> {
+        ALL_MOVES.iter().find(|m| format!("{}", m) == s)
+            .map(|m| *m)
+            .ok_or(ParseMoveError::new(s.to_owned()))
+    }
+}
+
+/// A sequence of moves.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Algo(pub Vec<Move>);
+
+impl Algo {
+    pub fn apply(&self, s: &mut State) {
+        for m in &self.0 {
+            m.apply(s);
+        }
+    }
+}
+
+impl Display for Algo {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        for (i, m) in (&self.0).iter().enumerate() {
+            if i != 0 {
+                write!(f, " ")?;
+            }
+            write!(f, "{}", m)?;
+        }
+        Ok(())
+    }
+}
+
+impl FromStr for Algo {
+    type Err = ParseMoveError;
+
+    fn from_str(s: &str) -> Result<Algo, ParseMoveError> {
+        let mut res = Vec::new();
+        for token in s.split_whitespace() {
+            res.push(token.parse()?);
+        }
+        Ok(Algo(res))
+    }
+}
+
+/// An error from parsing a move.
+#[derive(Clone, Debug)]
+pub struct ParseMoveError {
+    message: String,
+    move_str: String
+}
+
+impl ParseMoveError {
+    fn new(move_str: String) -> ParseMoveError {
+        ParseMoveError{
+            message: format!("invalid move: {}", move_str),
+            move_str: move_str
+        }
+    }
+
+    /// Get the move that failed to parse.
+    pub fn move_str(&self) -> &str {
+        &self.move_str
+    }
+}
+
+impl Display for ParseMoveError {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl Error for ParseMoveError {
+    fn description(&self) -> &str {
+        &self.message
     }
 }
 
@@ -150,6 +246,38 @@ mod tests {
 
     use Face::*;
     use Turns::*;
+
+    /// Test algorithm parsing.
+    #[test]
+    fn parse_algo() {
+        let actual: Algo = "R' U D'   F2 \t L' B2".parse().unwrap();
+        let expected = vec![
+            Move{face: Face::R, turns: Turns::Counter},
+            Move{face: Face::U, turns: Turns::Clockwise},
+            Move{face: Face::D, turns: Turns::Counter},
+            Move{face: Face::F, turns: Turns::Double},
+            Move{face: Face::L, turns: Turns::Counter},
+            Move{face: Face::B, turns: Turns::Double}
+        ];
+        assert_eq!(actual.0, expected);
+
+        assert!(Algo::from_str("R3 U").is_err());
+        assert!(Algo::from_str("RU").is_err());
+    }
+
+    /// Test algorithm stringification.
+    #[test]
+    fn stringify_algo() {
+        let algo = Algo(vec![
+            Move{face: Face::R, turns: Turns::Counter},
+            Move{face: Face::U, turns: Turns::Clockwise},
+            Move{face: Face::D, turns: Turns::Counter},
+            Move{face: Face::F, turns: Turns::Double},
+            Move{face: Face::L, turns: Turns::Counter},
+            Move{face: Face::B, turns: Turns::Double}
+        ]);
+        assert_eq!(format!("{}", algo), "R' U D' F2 L' B2");
+    }
 
     /// Test U moves.
     #[test]
