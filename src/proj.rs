@@ -2,7 +2,7 @@
 
 use std::hash::Hash;
 
-use super::state::State;
+use super::state::{Face, State};
 
 /// A projection of a state onto a subspace of all possible states.
 ///
@@ -45,5 +45,30 @@ impl Proj for LockProj {
             }
         }
         res
+    }
+}
+
+/// A projection of a state onto the corners.
+///
+/// Corners are encoded by storing two of their three stickers.
+#[derive(Clone, Eq, Hash, PartialEq)]
+pub struct CornerProj {
+    pub lock: LockProj,
+    pub corners: [Face; 16]
+}
+
+impl Proj for CornerProj {
+    fn project(s: &State) -> Self {
+        use Face::*;
+        let mut corners = [U; 16];
+        for face_idx in 0..4 {
+            for (i, sticker_idx) in [0, 2, 5, 7].iter().enumerate() {
+                corners[face_idx * 4 + i] = s.0[face_idx * 8 + sticker_idx].face;
+            }
+        }
+        CornerProj{
+            lock: Proj::project(s),
+            corners: corners
+        }
     }
 }
