@@ -78,18 +78,18 @@ impl State {
     }
 
     /// Check if a face is locked (i.e. cannot be turned).
-    pub fn locked(&self, face: Face) -> bool {
+    pub fn is_locked(&self, face: Face) -> bool {
         let mut direction = Direction::Neutral;
         for sticker in self.face(face) {
             if direction == Direction::Neutral {
                 direction = sticker.direction;
             } else if sticker.direction != Direction::Neutral {
                 if sticker.direction != direction {
-                    return false;
+                    return true;
                 }
             }
         }
-        true
+        false
     }
 }
 

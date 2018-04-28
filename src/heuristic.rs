@@ -46,6 +46,9 @@ impl<T: Proj> ProjHeuristic<T> {
             for _ in 0..pop_size {
                 let state = states.pop_front().unwrap();
                 for m in &moves {
+                    if state.is_locked(m.face) {
+                        continue;
+                    }
                     let mut new_state = state.clone();
                     m.apply(&mut new_state);
                     let proj = Proj::project(&new_state);
@@ -66,5 +69,20 @@ impl<T: Proj> ProjHeuristic<T> {
 impl<T: Proj> Heuristic for ProjHeuristic<T> {
     fn lower_bound(&self, s: &State) -> u8 {
         *self.table.get(&Proj::project(s)).unwrap_or(&0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proj::CornerProj;
+
+    #[test]
+    fn generate_heuristic() {
+        let heuristic_1: ProjHeuristic<CornerProj> = ProjHeuristic::generate(1);
+        assert_eq!(heuristic_1.table.len(), 19);
+
+        let heuristic_2: ProjHeuristic<CornerProj> = ProjHeuristic::generate(2);
+        assert_eq!(heuristic_2.table.len(), 190);
     }
 }
