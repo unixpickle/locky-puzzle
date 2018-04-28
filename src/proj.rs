@@ -21,18 +21,19 @@ pub trait Proj: Clone + Eq + Hash {
 /// since any less information could not determine if a move was locked.
 #[derive(Clone, Eq, PartialEq)]
 pub struct LockProj {
-    directions: [Direction; 24]
+    packed_faces: [u8; 6]
 }
 
 impl Proj for LockProj {
     fn project(s: &State) -> Self {
-        use Direction::*;
-        let mut res = LockProj{directions: [Neutral; 24]};
+        let mut res = LockProj{packed_faces: [0; 6]};
         for face_idx in 0..6 {
-            for (i, sticker_idx) in [1, 3, 4, 6].iter().enumerate() {
-                let dir = s.0[face_idx * 8usize + sticker_idx].direction;
-                res.directions[face_idx * 4 + i] = dir;
-            }
+            res.packed_faces[face_idx] = dir_quad_to_u8(
+                s.0[face_idx * 8usize + 1].direction,
+                s.0[face_idx * 8usize + 3].direction,
+                s.0[face_idx * 8usize + 4].direction,
+                s.0[face_idx * 8usize + 6].direction,
+            );
         }
         res
     }
@@ -40,20 +41,7 @@ impl Proj for LockProj {
 
 impl Hash for LockProj {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write(&[
-            dir_quad_to_u8(self.directions[0], self.directions[1], self.directions[2],
-                self.directions[3]),
-            dir_quad_to_u8(self.directions[4], self.directions[5], self.directions[6],
-                self.directions[7]),
-            dir_quad_to_u8(self.directions[8], self.directions[9], self.directions[10],
-                self.directions[11]),
-            dir_quad_to_u8(self.directions[12], self.directions[13], self.directions[14],
-                self.directions[15]),
-            dir_quad_to_u8(self.directions[16], self.directions[17], self.directions[18],
-                self.directions[19]),
-            dir_quad_to_u8(self.directions[20], self.directions[21], self.directions[22],
-                self.directions[23])
-        ]);
+        state.write(&self.packed_faces);
     }
 }
 
