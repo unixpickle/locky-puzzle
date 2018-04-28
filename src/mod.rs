@@ -14,4 +14,4 @@ pub use move_gen::{MoveGen};
 pub use moves::{ALL_MOVES, Algo, Move, ParseMoveError, Turns};
 pub use proj::{CornerProj, Proj, LockProj};
 pub use solve::{solve, solve_serial};
-pub use state::{Face, Direction, State};
+pub use state::{Face, Direction, State, Sticker};

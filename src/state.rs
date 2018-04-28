@@ -29,18 +29,17 @@ impl State {
 
         // Puzzle hyper-parameters.
         let faces = [U, D, F, B, R, L];
-        let directions = [Counter, Clockwise, Clockwise, Counter, Clockwise, Counter];
         let arrow_idxs = [[1, 6], [1, 6], [3, 4], [3, 4], [1, 6], [1, 6]];
 
         let mut stickers = [Sticker::default(); 48];
 
-        let face_infos = faces.iter().zip(&directions).zip(&arrow_idxs).enumerate();
-        for (face_idx, ((face, direction), indices)) in face_infos {
+        let face_infos = faces.iter().zip(&arrow_idxs).enumerate();
+        for (face_idx, (face, indices)) in face_infos {
             for sub_idx in 0..8 {
                 stickers[face_idx * 8 + sub_idx] = Sticker{
                     face: *face,
                     direction: if sub_idx == indices[0] || sub_idx == indices[1] {
-                        *direction
+                        face.standard_direction()
                     } else {
                         Neutral
                     }
@@ -205,6 +204,22 @@ pub enum Face {
     B,
     R,
     L
+}
+
+impl Face {
+    /// Get the direction that the arrows on this face should point.
+    pub fn standard_direction(&self) -> Direction {
+        use Direction::*;
+        use Face::*;
+        match self {
+            &U => Counter,
+            &D => Clockwise,
+            &F => Clockwise,
+            &B => Counter,
+            &R => Clockwise,
+            &L => Counter
+        }
+    }
 }
 
 impl Display for Face {
