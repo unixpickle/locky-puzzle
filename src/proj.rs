@@ -26,6 +26,16 @@ pub trait Proj: Clone + Eq + Hash + Send + Sync {
     fn project_with_lock(s: &State, l: LockProj) -> Self;
 }
 
+/// A projection that combines two other projections.
+#[derive(Clone, Eq, Hash, PartialEq)]
+pub struct PairProj<U: Proj, V: Proj>(U, V);
+
+impl<U: Proj, V: Proj> Proj for PairProj<U, V> {
+    fn project_with_lock(s: &State, l: LockProj) -> Self {
+        PairProj(U::project_with_lock(s, l.clone()), V::project_with_lock(s, l))
+    }
+}
+
 /// A projection of a state onto the sticker directions.
 ///
 /// This is the least amount of information a Proj could possibly contain,
