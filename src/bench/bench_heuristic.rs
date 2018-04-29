@@ -4,12 +4,16 @@ extern crate locky_puzzle;
 
 use std::time::Instant;
 
-use locky_puzzle::{ArrowAxisProj, CoFbProj, CoRlProj, CoUdProj, CornerFbProj, CornerProj,
-    LockProj, Proj, ProjHeuristic};
+use locky_puzzle::{ArrowAxisProj, CoFbProj, CornerFbProj, CornerProj, LockProj, Proj,
+    ProjHeuristic};
 
 fn main() {
     for i in 5..8 {
         time_heuristic::<ArrowAxisProj>("ArrowAxisProj", i);
+    }
+
+    for i in 5..8 {
+        time_heuristic::<CoFbProj>("CoFbProj", i);
     }
 
     for i in 5..8 {
@@ -18,18 +22,6 @@ fn main() {
 
     for i in 5..8 {
         time_heuristic::<CornerProj>("CornerProj", i);
-    }
-
-    for i in 5..8 {
-        time_heuristic::<CoFbProj>("CoFbProj", i);
-    }
-
-    for i in 5..8 {
-        time_heuristic::<CoRlProj>("CoRlProj", i);
-    }
-
-    for i in 5..8 {
-        time_heuristic::<CoUdProj>("CoUdProj", i);
     }
 
     for i in 5..11 {
