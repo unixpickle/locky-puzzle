@@ -171,7 +171,6 @@ impl ArrowAxisProj {
 impl Proj for ArrowAxisProj {
     fn project_with_lock(s: &State, l: LockProj) -> Self {
         let mut axes = [0; 6];
-        // Corners are encoded by storing two of their three stickers.
         for face_idx in 0..6 {
             let face = &s.0[(face_idx * 8)..((face_idx + 1) * 8)];
             axes[face_idx] = ArrowAxisProj::face_u8(face)
