@@ -1,6 +1,6 @@
 # locky-puzzle
 
-This is my attempt at creating a solver for a twisty puzzle. I don't know what this puzzle is called, and I don't have physical access to it. The [photos](photos) show the puzzle with a [V-perm](https://www.speedsolving.com/wiki/index.php/PLL#V_Permutation) on the yellow layer. A face can turn if all the arrows on that face point in the same rotational direction. In the solved state, opposite faces turn in opposite rotational directions (clockwise and counter-clockwise).
+I have created a solver for a twisty puzzle. I don't know what this puzzle is called, and I don't have physical access to it. The [photos](photos) show the puzzle with a [V-perm](https://www.speedsolving.com/wiki/index.php/PLL#V_Permutation) on the yellow layer. A face can turn if all the arrows on that face point in the same rotational direction. In the solved state, opposite faces turn in opposite rotational directions (clockwise and counter-clockwise).
 
 ![Photo of the puzzle](photos/yellow_blue_black.jpg)
 
@@ -21,10 +21,10 @@ Since the set of all `Proj(S)` may be much smaller than the set of all `S`, it i
 In my implementation, there is a [`Proj` trait](src/proj.rs) for projections. It is possible to compose `Proj`s, search the space of `Proj`s, and partially solve a cube so that it is equal to the solved state under a `Proj`. This is all done using type arguments. For example, you can do the following to brute-force the corners of a puzzle:
 
 ```rust
-proj_solve::<CornerProj, _>(state, NopHeuristic(), max_depth);
+proj_solve::<CornerProj, _>(state, &NopHeuristic(), max_depth);
 ```
 
-To speed up the search, you can use generate a heuristic that knows about all <= 7 move corner cases:
+To speed up the search, you can generate a heuristic that knows about all <= 7 move corner cases:
 
 ```rust
 let heuristic = ProjHeuristic::<CornerProj>::generate(7);
