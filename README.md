@@ -13,7 +13,7 @@ F U2 F' U2 B' U F U' B U' B' U F' U' B
 You can find a solution to this scramble yourself by running:
 
 ```
-$ cargo build
+$ cargo build --release
 $ ./target/release/locky-solve --corner-depth 7 --scramble "F U2 F' U2 B' U F U' B U' B' U F' U' B"
 Waiting for heuristic...
 Trying depth 0...
