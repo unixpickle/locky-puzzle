@@ -1,4 +1,4 @@
-//! A tool for solving the locky puzzle.
+//! A tool for scrambling the locky puzzle.
 
 extern crate clap;
 extern crate locky_puzzle;
