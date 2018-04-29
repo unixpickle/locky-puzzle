@@ -11,7 +11,8 @@ pub struct Args {
 /// Arguments that determine the search heuristic.
 #[derive(Clone)]
 pub struct HeuristicArgs {
-    pub corner_depth: u8
+    pub corner_depth: u8,
+    pub arrow_axis_depth: u8,
 }
 
 /// Parse the command-line arguments.
@@ -21,6 +22,11 @@ pub fn parse_args() -> Result<Args, String> {
             .long("corner-depth")
             .value_name("NUM")
             .help("Set the depth of the corner heuristic (default: 0)")
+            .takes_value(true))
+        .arg(Arg::with_name("arrow-axis-depth")
+            .long("arrow-axis-depth")
+            .value_name("NUM")
+            .help("Set the depth of the arrow axis heuristic (default: 0)")
             .takes_value(true))
         .arg(Arg::with_name("scramble")
             .long("scramble")
@@ -38,7 +44,8 @@ pub fn parse_args() -> Result<Args, String> {
 
     Ok(Args{
         heuristic: HeuristicArgs{
-            corner_depth: parse_arg!("corner-depth", "0")
+            corner_depth: parse_arg!("corner-depth", "0"),
+            arrow_axis_depth: parse_arg!("arrow-axis-depth", "0")
         },
         scramble: matches.value_of("scramble").map(From::from)
     })
