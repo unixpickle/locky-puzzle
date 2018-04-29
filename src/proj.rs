@@ -203,6 +203,6 @@ macro_rules! make_co {
     }
 }
 
-make_co!(UdCoProj, U, D);
-make_co!(FbCoProj, F, B);
-make_co!(RlCoProj, R, L);
+make_co!(CoUdProj, U, D);
+make_co!(CoFbProj, F, B);
+make_co!(CoRlProj, R, L);
