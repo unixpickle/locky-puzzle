@@ -9,7 +9,7 @@ mod input;
 
 use std::process::exit;
 
-use locky_puzzle::solve;
+use locky_puzzle::{MultiStep, solve};
 
 use arguments::{Args, parse_args};
 use heuristic::make_heuristic;
@@ -31,6 +31,9 @@ fn main() {
 }
 
 fn main_with_args(args: Args) -> Result<(), String> {
+    if args.multi_step {
+        return run_multistep(args)
+    }
     let heuristic_future = make_heuristic(&args.heuristic);
     let state = read_state(&args)?;
     println!("Waiting for heuristic...");
@@ -42,5 +45,19 @@ fn main_with_args(args: Args) -> Result<(), String> {
             return Ok(());
         }
     }
+    Ok(())
+}
+
+fn run_multistep(args: Args) -> Result<(), String> {
+    println!("Generating solver...");
+    let multi = MultiStep::generate_default();
+    println!("Computing solution...");
+    let (solution, parts) = multi.solve(&read_state(&args)?).map_err(|e| format!("{}", e))?;
+    println!("Solution: {}", solution);
+    print!("Parts:");
+    for part in &parts {
+        print!(" [  {}  ]", part)
+    }
+    println!("");
     Ok(())
 }

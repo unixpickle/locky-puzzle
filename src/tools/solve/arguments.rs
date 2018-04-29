@@ -5,7 +5,8 @@ use clap::{App, Arg};
 /// The parsed command-line arguments.
 pub struct Args {
     pub heuristic: HeuristicArgs,
-    pub scramble: Option<String>
+    pub scramble: Option<String>,
+    pub multi_step: bool
 }
 
 /// Arguments that determine the search heuristic.
@@ -49,8 +50,11 @@ pub fn parse_args() -> Result<Args, String> {
         .arg(Arg::with_name("scramble")
             .long("scramble")
             .value_name("ALGO")
-            .help("Solve a specific a sequence of moves")
+            .help("Set a specific algorithm to solve")
             .takes_value(true))
+        .arg(Arg::with_name("multi-step")
+            .long("multi-step")
+            .help("Solve the puzzle in multiple steps"))
         .get_matches();
 
     macro_rules! parse_arg {
@@ -68,6 +72,7 @@ pub fn parse_args() -> Result<Args, String> {
             corner_axis_depth: parse_arg!("corner-axis-depth", "0"),
             lock_depth: parse_arg!("lock-depth", "0")
         },
-        scramble: matches.value_of("scramble").map(From::from)
+        scramble: matches.value_of("scramble").map(From::from),
+        multi_step: matches.is_present("multi-step")
     })
 }

@@ -54,7 +54,7 @@ macro_rules! parallel_search {
 /// This may find sub-optimal solutions if the given depth is too large.
 /// Thus, it is recommended that callers iteratively try deeper and deeper
 /// searches until a solution is found.
-pub fn solve<H: Heuristic>(
+pub fn solve<H: Heuristic + ?Sized>(
     state: &State,
     heuristic: &H,
     depth: u8
@@ -67,7 +67,7 @@ pub fn solve<H: Heuristic>(
 /// Uses a single thread.
 ///
 /// See solve() for details.
-pub fn solve_serial<H: Heuristic>(
+pub fn solve_serial<H: Heuristic + ?Sized>(
     state: &State,
     heuristic: &H,
     depth: u8
@@ -87,7 +87,7 @@ pub fn solve_serial<H: Heuristic>(
 /// This may find sub-optimal solutions if the given depth is too large.
 /// Thus, it is recommended that callers iteratively try deeper and deeper
 /// searches until a solution is found.
-pub fn proj_solve<P: Proj, H: Heuristic>(
+pub fn proj_solve<P: Proj, H: Heuristic + ?Sized>(
     state: &State,
     heuristic: &H,
     depth: u8
@@ -106,7 +106,7 @@ pub fn proj_solve<P: Proj, H: Heuristic>(
 /// Uses a single thread.
 ///
 /// See proj_solve() for details.
-pub fn proj_solve_serial<P: Proj, H: Heuristic>(
+pub fn proj_solve_serial<P: Proj, H: Heuristic + ?Sized>(
     state: &State,
     heuristic: &H,
     depth: u8
@@ -141,7 +141,7 @@ macro_rules! search_step {
     }
 }
 
-fn solve_search<H: Heuristic>(
+fn solve_search<H: Heuristic + ?Sized>(
     state: &State,
     heuristic: &H,
     depth: u8,
@@ -163,7 +163,7 @@ fn solve_search<H: Heuristic>(
     false
 }
 
-fn proj_solve_search<P: Proj, H: Heuristic>(
+fn proj_solve_search<P: Proj, H: Heuristic + ?Sized>(
     solution: &P,
     state: &State,
     heuristic: &H,

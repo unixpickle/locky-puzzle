@@ -18,6 +18,12 @@ impl Heuristic for Box<Heuristic> {
     }
 }
 
+impl<'a> Heuristic for &'a Heuristic {
+    fn lower_bound(&self, s: &State, l: LockProj) -> u8 {
+        (*self).lower_bound(s, l)
+    }
+}
+
 /// A heuristic that takes a max over other heuristics.
 pub struct MaxHeuristic<T: Heuristic>(pub Vec<T>);
 
