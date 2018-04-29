@@ -4,6 +4,12 @@ use std::hash::{Hash, Hasher};
 
 use super::state::{Direction, Face, State, Sticker};
 
+/// The UD/FB/RL stickers for each corner on the cube.
+const CORNERS: [(usize, usize, usize); 8] = [
+    (0, 26, 40), (2, 24, 34), (5, 16, 42), (7, 18, 32),
+    (13, 31, 45), (15, 29, 39), (8, 21, 47), (10, 23, 37)
+];
+
 /// A projection of a state onto a subspace of all possible states.
 ///
 /// Projections must satisfy some properties:
@@ -168,7 +174,7 @@ impl Hash for ArrowAxisProj {
 macro_rules! make_co {
     ( $name:ident, $face1:tt, $face2:tt ) => {
         /// A projection that tracks the corner orientation with respect to the
-        // $face1 and $face2 faces.
+        /// $face1 and $face2 faces.
         #[derive(Clone, Eq, Hash, PartialEq)]
         pub struct $name {
             lock: LockProj,
@@ -178,11 +184,8 @@ macro_rules! make_co {
         impl Proj for $name {
             fn project(s: &State) -> Self {
                 use Face::*;
-                // For each corner, lists the U/D and F/B sticker indices.
-                let corners = [(0, 26), (2, 24), (5, 16), (7, 18),
-                               (13, 31), (15, 29), (8, 21), (10, 23)];
                 let mut orientations = 0u16;
-                for &(ud, fb) in &corners {
+                for &(ud, fb, _) in &CORNERS {
                     orientations <<= 2;
                     let ud_face = s.0[ud].face;
                     let fb_face = s.0[fb].face;
@@ -206,3 +209,41 @@ macro_rules! make_co {
 make_co!(CoUdProj, U, D);
 make_co!(CoFbProj, F, B);
 make_co!(CoRlProj, R, L);
+
+macro_rules! make_corner_axis {
+    ( $name:tt, $face1:tt, $face2:tt ) => {
+        /// A projection that tracks whether each corner originates from the
+        /// $face1 or $face2 face.
+        #[derive(Clone, Eq, Hash, PartialEq)]
+        pub struct $name {
+            lock: LockProj,
+            packed_faces: u8
+        }
+
+        impl Proj for $name {
+            fn project(s: &State) -> Self {
+                use Face::*;
+                let mut faces = 0u8;
+                for &(ud, fb, rl) in &CORNERS {
+                    faces <<= 1;
+                    let ud_face = s.0[ud].face;
+                    let fb_face = s.0[fb].face;
+                    let rl_face = s.0[rl].face;
+                    faces |= if $face1 == ud_face || $face1 == fb_face || $face1 == rl_face {
+                        0
+                    } else {
+                        1
+                    };
+                }
+                $name{
+                    lock: Proj::project(s),
+                    packed_faces: faces
+                }
+            }
+        }
+    }
+}
+
+make_corner_axis!(CornerUdProj, U, D);
+make_corner_axis!(CornerFbProj, F, B);
+make_corner_axis!(CornerRlProj, R, L);
