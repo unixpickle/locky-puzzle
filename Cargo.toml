@@ -19,5 +19,10 @@ path = "src/bench/bench_solve.rs"
 name = "locky-solve"
 path = "src/tools/solve/main.rs"
 
+[[bin]]
+name = "locky-scramble"
+path = "src/tools/scramble/main.rs"
+
 [dependencies]
 clap = "2.31"
+rand = "0.4"

@@ -43,6 +43,19 @@ impl Move {
         self.turns.apply_face(state.face_mut(self.face));
         self.turns.apply_ring(state, self.face);
     }
+
+    /// Get the inverse of the move.
+    pub fn inverse(&self) -> Move {
+        use Turns::*;
+        Move{
+            face: self.face,
+            turns: match self.turns {
+                Clockwise => Counter,
+                Counter => Clockwise,
+                Double => Double
+            }
+        }
+    }
 }
 
 impl Display for Move {
