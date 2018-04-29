@@ -34,6 +34,9 @@ fn scramble_search(
     while next_options.len() > 0 {
         let idx = random::<usize>() % next_options.len();
         let (next_gen, m) = next_options.remove(idx);
+        if state.is_locked(m.face) {
+            continue;
+        }
         m.apply(state);
         history.push(m);
         if scramble_search(state, moves - 1, history, next_gen) {
