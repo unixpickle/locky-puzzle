@@ -107,6 +107,13 @@ impl Proj for CornerProj {
     }
 }
 
+impl Hash for CornerProj {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.lock.hash(state);
+        state.write(&self.packed_corners);
+    }
+}
+
 /// A projection that tracks the face axis of all the stickers with arrows.
 #[derive(Clone, Eq, PartialEq)]
 pub struct ArrowAxisProj {
@@ -155,12 +162,5 @@ impl Hash for ArrowAxisProj {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.lock.hash(state);
         state.write(&self.packed_axes);
-    }
-}
-
-impl Hash for CornerProj {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.lock.hash(state);
-        state.write(&self.packed_corners);
     }
 }
