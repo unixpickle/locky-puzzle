@@ -164,3 +164,45 @@ impl Hash for ArrowAxisProj {
         state.write(&self.packed_axes);
     }
 }
+
+macro_rules! make_co {
+    ( $name:ident, $face1:tt, $face2:tt ) => {
+        /// A projection that tracks the corner orientation with respect to the
+        // $face1 and $face2 faces.
+        #[derive(Clone, Eq, Hash, PartialEq)]
+        pub struct $name {
+            lock: LockProj,
+            packed_co: u16
+        }
+
+        impl Proj for $name {
+            fn project(s: &State) -> Self {
+                use Face::*;
+                // For each corner, lists the U/D and F/B sticker indices.
+                let corners = [(0, 26), (2, 24), (5, 16), (7, 18),
+                               (13, 31), (15, 29), (8, 21), (10, 23)];
+                let mut orientations = 0u16;
+                for &(ud, fb) in &corners {
+                    orientations <<= 2;
+                    let ud_face = s.0[ud].face;
+                    let fb_face = s.0[fb].face;
+                    orientations |= if ud_face == $face1 || ud_face == $face2 {
+                        0
+                    } else if fb_face == $face1 || fb_face == $face2 {
+                        1
+                    } else {
+                        2
+                    };
+                }
+                $name{
+                    lock: Proj::project(s),
+                    packed_co: orientations
+                }
+            }
+        }
+    }
+}
+
+make_co!(UDCOProj, U, D);
+make_co!(FBCOProj, F, B);
+make_co!(RLCOProj, R, L);
