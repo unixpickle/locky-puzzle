@@ -15,7 +15,7 @@ mod thread;
 pub use heuristic::{Heuristic, MaxHeuristic, NopHeuristic, ProjHeuristic};
 pub use move_gen::{MoveGen};
 pub use moves::{ALL_MOVES, Algo, Move, ParseMoveError, Turns};
-pub use proj::{ArrowAxisProj, CornerProj, FBCOProj, Proj, LockProj, RLCOProj, UDCOProj};
+pub use proj::{ArrowAxisProj, CornerProj, FbCoProj, Proj, LockProj, RlCoProj, UdCoProj};
 pub use scramble::scramble;
 pub use solve::{solve, solve_serial};
 pub use state::{Face, Direction, State, Sticker};
