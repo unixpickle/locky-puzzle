@@ -4,7 +4,7 @@ use std::mem::drop;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::thread::spawn;
 
-use locky_puzzle::{ArrowAxisProj, CornerProj, FBCOProj, Heuristic, MaxHeuristic, Proj,
+use locky_puzzle::{ArrowAxisProj, CornerProj, FBCOProj, Heuristic, LockProj, MaxHeuristic, Proj,
     ProjHeuristic, RLCOProj, UDCOProj};
 use arguments::HeuristicArgs;
 
@@ -23,6 +23,9 @@ pub fn make_heuristic(args: &HeuristicArgs) -> Receiver<MaxHeuristic<Box<Heurist
         make_proj_heuristic::<FBCOProj>(args.co_depth, send_individual.clone());
         make_proj_heuristic::<RLCOProj>(args.co_depth, send_individual.clone());
         make_proj_heuristic::<UDCOProj>(args.co_depth, send_individual.clone());
+    }
+    if args.lock_depth > 0 {
+        make_proj_heuristic::<LockProj>(args.lock_depth, send_individual.clone());
     }
     drop(send_individual);
 

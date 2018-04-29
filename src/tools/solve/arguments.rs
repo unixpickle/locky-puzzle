@@ -13,7 +13,8 @@ pub struct Args {
 pub struct HeuristicArgs {
     pub corner_depth: u8,
     pub arrow_axis_depth: u8,
-    pub co_depth: u8
+    pub co_depth: u8,
+    pub lock_depth: u8
 }
 
 /// Parse the command-line arguments.
@@ -34,6 +35,11 @@ pub fn parse_args() -> Result<Args, String> {
             .value_name("NUM")
             .help("Set the depth of the corner orientation heuristic (default: 0)")
             .takes_value(true))
+        .arg(Arg::with_name("lock-depth")
+            .long("lock-depth")
+            .value_name("NUM")
+            .help("Set the depth of the lock heuristic (default: 0)")
+            .takes_value(true))
         .arg(Arg::with_name("scramble")
             .long("scramble")
             .value_name("ALGO")
@@ -52,7 +58,8 @@ pub fn parse_args() -> Result<Args, String> {
         heuristic: HeuristicArgs{
             corner_depth: parse_arg!("corner-depth", "0"),
             arrow_axis_depth: parse_arg!("arrow-axis-depth", "0"),
-            co_depth: parse_arg!("co-depth", "0")
+            co_depth: parse_arg!("co-depth", "0"),
+            lock_depth: parse_arg!("lock-depth", "0")
         },
         scramble: matches.value_of("scramble").map(From::from)
     })
