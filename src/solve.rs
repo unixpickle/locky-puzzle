@@ -6,6 +6,7 @@ use std::sync::mpsc::channel;
 use super::heuristic::Heuristic;
 use super::move_gen::MoveGen;
 use super::moves::{Algo, Move};
+use super::proj::Proj;
 use super::state::State;
 use super::thread::ThreadScope;
 
@@ -81,7 +82,7 @@ fn solve_search<H: Heuristic>(
 ) -> bool {
     if state.is_solved() {
         return true;
-    } else if depth == 0 || depth < heuristic.lower_bound(state) {
+    } else if depth == 0 || depth < heuristic.lower_bound(state, Proj::project(state)) {
         return false;
     }
     for (new_gen, m) in gen {

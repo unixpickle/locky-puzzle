@@ -18,7 +18,12 @@ const CORNERS: [(usize, usize, usize); 8] = [
 /// * A projection must know which faces are locked.
 pub trait Proj: Clone + Eq + Hash + Send + Sync {
     /// Project the state onto the subspace.
-    fn project(s: &State) -> Self;
+    fn project(s: &State) -> Self {
+        Self::project_with_lock(s, LockProj::project(s))
+    }
+
+    /// Project the state onto the subspace, given a pre-computed LockProj.
+    fn project_with_lock(s: &State, l: LockProj) -> Self;
 }
 
 /// A projection of a state onto the sticker directions.
@@ -59,6 +64,10 @@ impl Proj for LockProj {
         }
         res
     }
+
+    fn project_with_lock(_: &State, l: LockProj) -> Self {
+        l
+    }
 }
 
 impl Hash for LockProj {
@@ -93,7 +102,7 @@ impl CornerProj {
 }
 
 impl Proj for CornerProj {
-    fn project(s: &State) -> Self {
+    fn project_with_lock(s: &State, l: LockProj) -> Self {
         let mut corners = [0; 8];
         // Corners are encoded by storing two of their three stickers.
         for face_idx in 0..4 {
@@ -107,7 +116,7 @@ impl Proj for CornerProj {
             );
         }
         CornerProj{
-            lock: Proj::project(s),
+            lock: l,
             packed_corners: corners
         }
     }
@@ -150,7 +159,7 @@ impl ArrowAxisProj {
 }
 
 impl Proj for ArrowAxisProj {
-    fn project(s: &State) -> Self {
+    fn project_with_lock(s: &State, l: LockProj) -> Self {
         let mut axes = [0; 6];
         // Corners are encoded by storing two of their three stickers.
         for face_idx in 0..6 {
@@ -158,7 +167,7 @@ impl Proj for ArrowAxisProj {
             axes[face_idx] = ArrowAxisProj::face_u8(face)
         }
         ArrowAxisProj{
-            lock: Proj::project(s),
+            lock: l,
             packed_axes: axes
         }
     }
@@ -182,7 +191,7 @@ macro_rules! make_co {
         }
 
         impl Proj for $name {
-            fn project(s: &State) -> Self {
+            fn project_with_lock(s: &State, l: LockProj) -> Self {
                 use Face::*;
                 let mut orientations = 0u16;
                 for &(ud, fb, _) in &CORNERS {
@@ -198,7 +207,7 @@ macro_rules! make_co {
                     };
                 }
                 $name{
-                    lock: Proj::project(s),
+                    lock: l,
                     packed_co: orientations
                 }
             }
@@ -221,7 +230,7 @@ macro_rules! make_corner_axis {
         }
 
         impl Proj for $name {
-            fn project(s: &State) -> Self {
+            fn project_with_lock(s: &State, l: LockProj) -> Self {
                 use Face::*;
                 let mut faces = 0u8;
                 for &(ud, fb, rl) in &CORNERS {
@@ -236,7 +245,7 @@ macro_rules! make_corner_axis {
                     };
                 }
                 $name{
-                    lock: Proj::project(s),
+                    lock: l,
                     packed_faces: faces
                 }
             }

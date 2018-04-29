@@ -4,17 +4,17 @@ use std::collections::{HashMap, VecDeque};
 use std::collections::hash_map::Entry;
 
 use super::move_gen::MoveGen;
-use super::proj::Proj;
+use super::proj::{LockProj, Proj};
 use super::state::State;
 
 /// A lower-bound on the number of moves to achieve a certain goal.
 pub trait Heuristic: Send + Sync {
-    fn lower_bound(&self, s: &State) -> u8;
+    fn lower_bound(&self, s: &State, l: LockProj) -> u8;
 }
 
 impl Heuristic for Box<Heuristic> {
-    fn lower_bound(&self, s: &State) -> u8 {
-        self.as_ref().lower_bound(s)
+    fn lower_bound(&self, s: &State, l: LockProj) -> u8 {
+        self.as_ref().lower_bound(s, l)
     }
 }
 
@@ -22,10 +22,10 @@ impl Heuristic for Box<Heuristic> {
 pub struct MaxHeuristic<T: Heuristic>(pub Vec<T>);
 
 impl<T: Heuristic> Heuristic for MaxHeuristic<T> {
-    fn lower_bound(&self, s: &State) -> u8 {
+    fn lower_bound(&self, s: &State, l: LockProj) -> u8 {
         let mut res = 0;
         for heuristic in &self.0 {
-            res = heuristic.lower_bound(s).max(res);
+            res = heuristic.lower_bound(s, l.clone()).max(res);
         }
         res
     }
@@ -35,7 +35,7 @@ impl<T: Heuristic> Heuristic for MaxHeuristic<T> {
 pub struct NopHeuristic();
 
 impl Heuristic for NopHeuristic {
-    fn lower_bound(&self, _: &State) -> u8 {
+    fn lower_bound(&self, _s: &State, _l: LockProj) -> u8 {
         0
     }
 }
@@ -82,8 +82,8 @@ impl<T: Proj> ProjHeuristic<T> {
 }
 
 impl<T: Proj> Heuristic for ProjHeuristic<T> {
-    fn lower_bound(&self, s: &State) -> u8 {
-        *self.table.get(&Proj::project(s)).unwrap_or(&self.default)
+    fn lower_bound(&self, s: &State, l: LockProj) -> u8 {
+        *self.table.get(&Proj::project_with_lock(s, l)).unwrap_or(&self.default)
     }
 }
 
