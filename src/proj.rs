@@ -2,7 +2,7 @@
 
 use std::hash::{Hash, Hasher};
 
-use super::state::{Direction, Face, State};
+use super::state::{Direction, Face, State, Sticker};
 
 /// A projection of a state onto a subspace of all possible states.
 ///
@@ -62,8 +62,6 @@ impl Hash for LockProj {
 }
 
 /// A projection of a state onto the corners.
-///
-/// Corners are encoded by storing two of their three stickers.
 #[derive(Clone, Eq, PartialEq)]
 pub struct CornerProj {
     lock: LockProj,
@@ -91,6 +89,7 @@ impl CornerProj {
 impl Proj for CornerProj {
     fn project(s: &State) -> Self {
         let mut corners = [0; 8];
+        // Corners are encoded by storing two of their three stickers.
         for face_idx in 0..4 {
             corners[face_idx * 2] = CornerProj::faces_u8(
                 s.0[face_idx * 8 + 0].face,
@@ -105,6 +104,57 @@ impl Proj for CornerProj {
             lock: Proj::project(s),
             packed_corners: corners
         }
+    }
+}
+
+/// A projection that tracks the face axis of all the stickers with arrows.
+#[derive(Clone, Eq, PartialEq)]
+pub struct ArrowAxisProj {
+    lock: LockProj,
+    packed_axes: [u8; 6]
+}
+
+impl ArrowAxisProj {
+    fn face_u8(face: &[Sticker]) -> u8 {
+        ArrowAxisProj::sticker_u8(face[1]) |
+            (ArrowAxisProj::sticker_u8(face[3]) << 2) |
+            (ArrowAxisProj::sticker_u8(face[4]) << 4) |
+            (ArrowAxisProj::sticker_u8(face[6]) << 6)
+    }
+
+    fn sticker_u8(sticker: Sticker) -> u8 {
+        use Face::*;
+        if sticker.direction == Direction::Neutral {
+            0
+        } else {
+            match sticker.face {
+                U | D => 0,
+                F | B => 1,
+                R | L => 2
+            }
+        }
+    }
+}
+
+impl Proj for ArrowAxisProj {
+    fn project(s: &State) -> Self {
+        let mut axes = [0; 6];
+        // Corners are encoded by storing two of their three stickers.
+        for face_idx in 0..6 {
+            let face = &s.0[(face_idx * 8)..((face_idx + 1) * 8)];
+            axes[face_idx] = ArrowAxisProj::face_u8(face)
+        }
+        ArrowAxisProj{
+            lock: Proj::project(s),
+            packed_axes: axes
+        }
+    }
+}
+
+impl Hash for ArrowAxisProj {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.lock.hash(state);
+        state.write(&self.packed_axes);
     }
 }
 

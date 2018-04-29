@@ -4,9 +4,13 @@ extern crate locky_puzzle;
 
 use std::time::Instant;
 
-use locky_puzzle::{CornerProj, Proj, ProjHeuristic};
+use locky_puzzle::{ArrowAxisProj, CornerProj, Proj, ProjHeuristic};
 
 fn main() {
+    time_heuristic::<ArrowAxisProj>("ArrowAxisProj(5)", 5);
+    time_heuristic::<ArrowAxisProj>("ArrowAxisProj(6)", 6);
+    time_heuristic::<ArrowAxisProj>("ArrowAxisProj(7)", 7);
+
     time_heuristic::<CornerProj>("CornerProj(5)", 5);
     time_heuristic::<CornerProj>("CornerProj(6)", 6);
     time_heuristic::<CornerProj>("CornerProj(7)", 7);
@@ -14,8 +18,8 @@ fn main() {
 
 fn time_heuristic<T: Proj>(label: &str, depth: u8) {
     let start = Instant::now();
-    ProjHeuristic::<CornerProj>::generate(depth);
+    let size = ProjHeuristic::<T>::generate(depth).table.len();
     let elapsed = start.elapsed();
-    println!("{} took {} ms", label, elapsed.as_secs() * 1000 +
-        ((elapsed.subsec_nanos() / 1000000) as u64))
+    println!("{} took {} ms (size {})", label, elapsed.as_secs() * 1000 +
+        ((elapsed.subsec_nanos() / 1000000) as u64), size)
 }

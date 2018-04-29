@@ -90,17 +90,20 @@ impl<T: Proj> Heuristic for ProjHeuristic<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proj::CornerProj;
+    use proj::{ArrowAxisProj, CornerProj};
 
     #[test]
     fn generate_heuristic() {
-        let heuristic_1: ProjHeuristic<CornerProj> = ProjHeuristic::generate(1);
-        assert_eq!(heuristic_1.table.len(), 19);
+        let corners_1: ProjHeuristic<CornerProj> = ProjHeuristic::generate(1);
+        assert_eq!(corners_1.table.len(), 19);
 
-        let heuristic_2: ProjHeuristic<CornerProj> = ProjHeuristic::generate(2);
-        assert_eq!(heuristic_2.table.len(), 190);
+        let corners_2: ProjHeuristic<CornerProj> = ProjHeuristic::generate(2);
+        assert_eq!(corners_2.table.len(), 190);
 
-        let heuristic_5: ProjHeuristic<CornerProj> = ProjHeuristic::generate(5);
-        assert_eq!(heuristic_5.table.len(), 77362);
+        let corners_5: ProjHeuristic<CornerProj> = ProjHeuristic::generate(5);
+        assert_eq!(corners_5.table.len(), 77362);
+
+        let arrows_5: ProjHeuristic<ArrowAxisProj> = ProjHeuristic::generate(5);
+        assert_eq!(arrows_5.table.len(), 66756);
     }
 }
