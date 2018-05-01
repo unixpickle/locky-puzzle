@@ -59,29 +59,41 @@ impl MultiStep {
     ///
     /// Returns both the complete solution, and a decomposition of the
     /// solution into its component steps.
-    pub fn solve(&self, s: &State) -> Result<(Algo, [Algo; 5]), MultiStepError> {
+    pub fn solve(&self, s: &State) -> Result<(Algo, Vec<Algo>), MultiStepError> {
         use MultiStepError::*;
-        let (a1, s1) = MultiStep::step::<LockProj>(s, &self.lock, 11).ok_or(InvalidEdges)?;
-        let (a2, s2) = MultiStep::step::<ArrowAxisProj>(&s1, &self.arrow, 255)
-            .ok_or(InvalidEdges)?;
+        let (mut parts, new_state) = match MultiStep::step::<ArrowAxisProj>(s, &self.arrow, 14) {
+            Some((algo, new_state)) => (vec![algo], new_state),
+            None => {
+                let (a1, s1) = MultiStep::step::<LockProj>(s, &self.lock, 13)
+                    .ok_or(InvalidEdges)?;
+                let (a2, s2) = MultiStep::step::<ArrowAxisProj>(&s1, &self.arrow, 255)
+                    .ok_or(InvalidEdges)?;
+                (vec![a1, a2], s2)
+            }
+        };
 
         type Combo1Proj = PairProj<PairProj<ArrowAxisProj, CoFbProj>,
                                    PairProj<CoRlProj, CoUdProj>>;
         let combo1 = MaxHeuristic::<&Heuristic>(vec![&self.arrow, &self.co_fb, &self.co_rl,
             &self.co_ud]);
-        let (a3, s3) = MultiStep::step::<Combo1Proj>(&s2, &combo1, 255).ok_or(InvalidCorners)?;
+        let (algo, new_state) = MultiStep::step::<Combo1Proj>(&new_state, &combo1, 255)
+            .ok_or(InvalidCorners)?;
+        parts.push(algo);
 
         type Combo2Proj = PairProj<ArrowAxisProj, CornerProj>;
         let combo2 = MaxHeuristic::<&Heuristic>(vec![&self.arrow, &self.corner]);
-        let (a4, s4) = MultiStep::step::<Combo2Proj>(&s3, &combo2, 255).ok_or(InvalidState)?;
+        let (algo, new_state) = MultiStep::step::<Combo2Proj>(&new_state, &combo1, 255)
+            .ok_or(InvalidState)?;
+        parts.push(algo);
 
         for i in 0..255 {
-            if let Some(a5) = solve(&s4, &combo2, i) {
-                let pieces = [a1, a2, a3, a4, a5];
-                let combined = pieces.iter().flat_map(|alg| alg.0.clone()).collect();
-                return Ok((Algo(combined), pieces));
+            if let Some(algo) = solve(&new_state, &combo2, i) {
+                parts.push(algo);
+                let combined = (&parts).iter().flat_map(|alg| alg.0.clone()).collect();
+                return Ok((Algo(combined), parts));
             }
         }
+
         Err(InvalidState)
     }
 
