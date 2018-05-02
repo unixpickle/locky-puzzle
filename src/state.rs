@@ -162,8 +162,6 @@ impl Display for State {
     }
 }
 
-// TODO: implement Debug for State.
-
 /// A sticker on the puzzle.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Sticker {
