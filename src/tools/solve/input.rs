@@ -94,8 +94,20 @@ fn read_sticker_row() -> Result<[Sticker; 9], String> {
     }
 }
 
-fn validate_state(_state: &State) -> Result<(), String> {
-    // TODO: check that there are exactly 6 clockwise and 6 counter-clockwise
-    // directions.
-    Ok(())
+fn validate_state(state: &State) -> Result<(), String> {
+    use locky_puzzle::Direction::*;
+    let mut num_clockwise = 0;
+    let mut num_counter = 0;
+    for sticker in state.0.iter() {
+        match sticker.direction {
+            Clockwise => num_clockwise += 1,
+            Counter => num_counter += 1,
+            _ => ()
+        }
+    }
+    if num_clockwise != 6 || num_counter != 6 {
+        Err("expected 6 clockwise and 6 counter-clockwise arrows".to_owned())
+    } else {
+        Ok(())
+    }
 }
